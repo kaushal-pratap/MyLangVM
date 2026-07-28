@@ -4,3 +4,5 @@ mylangvm
 *.o
 *.dSYM/
 *~
+main.dSYM/
+mylangvm.dSYM/
