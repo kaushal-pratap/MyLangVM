@@ -12,23 +12,23 @@ typedef struct{
 }Stack; 
 
 // Function to initialize the stack, it takes pointer of Stack structure data type as input parameter
-void initialize(Stack *stack){
+void stack_init(Stack *stack){
     stack->top = -1;
 }
 
 // Fucntion to check if stack is empty
-bool isEmpty(Stack *stack){
+bool stack_is_empty(Stack *stack){
     return stack->top == -1;
 }
 
 // Function to check if stack is full
-bool isFull(Stack *stack){
+bool stack_is_full(Stack *stack){
     return stack->top >= MAX_STACK_SIZE - 1;
 }
 
 // Function to push some value to the stack
-void push(Stack *stack, int value){
-    if(isFull(stack)){
+void stack_push(Stack *stack, int value){
+    if(stack_is_full(stack)){
         fprintf(stderr,"Stack Overflow ! ");
         exit(EXIT_FAILURE);
     }
@@ -37,8 +37,8 @@ void push(Stack *stack, int value){
 }
 
 // Function to pop some value form the stack and it also prints the value for debugging 
-int pop(Stack *stack){
-    if(isEmpty(stack)){
+int stack_pop(Stack *stack){
+    if(stack_is_empty(stack)){
         fprintf(stderr,"Stack Underflow ! ");
         exit(EXIT_FAILURE);
     }
@@ -49,8 +49,8 @@ int pop(Stack *stack){
 }
 
 // Function to look at the top most element
-int peek(Stack *stack){
-    if(isEmpty(stack)){
+int stack_peek(Stack *stack){
+    if(stack_is_empty(stack)){
         fprintf(stderr,"Stack Underflow ! ");
         exit(EXIT_FAILURE);
     }
@@ -60,11 +60,17 @@ int peek(Stack *stack){
 
 // Now begins the implementation of my own language virtual machine
 
-// Defining program counter
-int pc = 0;
 
-// Defining if program is running or not for [HLT]
-bool running = true;
+
+// Defining a structure for VM separately, which will allow us to run multiple VM instances
+typedef struct{
+    Stack stack;
+    size_t pc;
+    bool running;
+    size_t programLength;
+    const int *program;
+}VM;
+
 
 // Creating enumration, same as [#define] but [enum] auto-indexes the elements and replaces the words same as like [#define] do
 typedef enum{
@@ -109,118 +115,133 @@ const int program[] = {
     };
 
 // Function to fetch the current instruction
-Instruction fetch(){
-    return program[pc];
+Instruction vm_fetch_instruction(VM *vm){
+    return vm->program[vm->pc];
 }
 
 // Function to execute the instructions
-void eval(Instruction instr, Stack *stack){
+void vm_execute_instruction(VM *vm, Instruction instr){
     switch(instr){
         case HLT: {
-            running = false;
+            vm->running = false;
             break;
         }
         case PSH: {
-            push(stack,program[++pc]);
+            stack_push(&vm->stack,vm->program[++vm->pc]);
             break;
         }
         case ADD: {
-            int rhs = pop(stack);
-            int lhs = pop(stack);
-            push(stack,lhs+rhs);
+            int rhs = stack_pop(&vm->stack);
+            int lhs = stack_pop(&vm->stack);
+            stack_push(&vm->stack,lhs+rhs);
             break;
         }
         case SUB: {
-            int rhs = pop(stack);
-            int lhs = pop(stack);
-            push(stack,lhs-rhs);
+            int rhs = stack_pop(&vm->stack);
+            int lhs = stack_pop(&vm->stack);
+            stack_push(&vm->stack,lhs-rhs);
             break;
         }
         case MUL: {
-            int rhs = pop(stack);
-            int lhs = pop(stack);
-            push(stack,lhs*rhs);
+            int rhs = stack_pop(&vm->stack);
+            int lhs = stack_pop(&vm->stack);
+            stack_push(&vm->stack,lhs*rhs);
             break;
         }
         case DIV: {
-            int rhs = pop(stack);
-            int lhs = pop(stack);
+            int rhs = stack_pop(&vm->stack);
+            int lhs = stack_pop(&vm->stack);
             if(rhs == 0){
-                push(stack,lhs);
-                push(stack,rhs);
+                stack_push(&vm->stack,lhs);
+                stack_push(&vm->stack,rhs);
                 fprintf(stderr,"Division by zero !! ");
-                running = false;
+                vm->running = false;
                 break;
             }
-            push(stack,lhs/rhs);
+            stack_push(&vm->stack,lhs/rhs);
             break;
         }
         case DUP: {
-            int duplicate = peek(stack);
-            push(stack,duplicate);
+            int duplicate = stack_peek(&vm->stack);
+            stack_push(&vm->stack,duplicate);
             break;
         }
         case SWP: {
-            int rhs = pop(stack);
-            int lhs = pop(stack);
-            push(stack,rhs);
-            push(stack,lhs);
+            int rhs = stack_pop(&vm->stack);
+            int lhs = stack_pop(&vm->stack);
+            stack_push(&vm->stack,rhs);
+            stack_push(&vm->stack,lhs);
             break;
         }
         case MOD: {
-            int rhs = pop(stack);
-            int lhs = pop(stack);
+            int rhs = stack_pop(&vm->stack);
+            int lhs = stack_pop(&vm->stack);
             if(rhs == 0){
-                push(stack,lhs);
-                push(stack,rhs);
+                stack_push(&vm->stack,lhs);
+                stack_push(&vm->stack,rhs);
                 fprintf(stderr,"Modulo by zero !! ");
-                running = false;
+                vm->running = false;
                 break;
             }
-            push(stack,lhs%rhs);
+            stack_push(&vm->stack,lhs%rhs);
             break;
         }
         case NEG: {
-            if(peek(stack) > 0){
-                int num = pop(stack);
-                push(stack,(-1)*num);
+            if(stack_peek(&vm->stack) > 0){
+                int num = stack_pop(&vm->stack);
+                stack_push(&vm->stack,-num);
                 break;
             }
             break;
         }
         case POS: {
-            if(peek(stack) < 0){
-                int num = pop(stack);
-                push(stack,(-1)*num);
+            if(stack_peek(&vm->stack) < 0){
+                int num = stack_pop(&vm->stack);
+                stack_push(&vm->stack,-num);
                 break;
             }
             break;
         }
         case POP: {
-            pop(stack);
+            stack_pop(&vm->stack);
             break;
         }
         default:
         fprintf(stderr,"Unknown instruction: %d\n", instr);
-        running = false;
+        vm->running = false;
         break;
     }
     
 }
 
-//Our main function where we initialize our stack and run the vm
-int main(){
-    Stack stack;
-    initialize(&stack);
-    int programLength = sizeof(program)/sizeof(int);
-    
-    while(running){
-        if(pc >= programLength){
+
+void vm_init(VM *vm, const int *program, size_t programLength){
+    vm->pc = 0;
+    vm->running = true;
+    vm->programLength = programLength;
+    vm->program = program;
+    stack_init(&vm->stack);
+}
+
+void vm_step(VM *vm){
+    if(vm->pc >= vm->programLength){
         fprintf(stderr,"Program counter out of bounds !! ");
         exit(EXIT_FAILURE);
     }
-        eval(fetch(),&stack);
-        pc++;
+    vm_execute_instruction(vm,vm_fetch_instruction(vm));
+    vm->pc++;
+}
+void vm_run(VM *vm){
+    while(vm->running){
+        vm_step(vm);
     };
+}
+
+
+//Our main function where we initialize our stack and run the vm
+int main(){
+    VM vm1;
+    vm_init(&vm1, program, sizeof(program)/sizeof(program[0]));
+    vm_run(&vm1);
     return 0;
 }
