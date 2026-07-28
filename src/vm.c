@@ -1,4 +1,4 @@
-#include "vm.h"
+#include "instruction_handlers.h"
 
 // Function to fetch the current instruction
 Instruction vm_fetch_instruction(VM *vm){
@@ -9,87 +9,51 @@ Instruction vm_fetch_instruction(VM *vm){
 void vm_execute_instruction(VM *vm, Instruction instr){
     switch(instr){
         case HLT: {
-            vm->running = false;
+            execute_hlt(vm);
             break;
         }
         case PSH: {
-            stack_push(&vm->stack,vm->program[++vm->pc]);
+            execute_psh(vm);
             break;
         }
         case ADD: {
-            int rhs = stack_pop(&vm->stack);
-            int lhs = stack_pop(&vm->stack);
-            stack_push(&vm->stack,lhs+rhs);
+            execute_add(vm);
             break;
         }
         case SUB: {
-            int rhs = stack_pop(&vm->stack);
-            int lhs = stack_pop(&vm->stack);
-            stack_push(&vm->stack,lhs-rhs);
+            execute_sub(vm);
             break;
         }
         case MUL: {
-            int rhs = stack_pop(&vm->stack);
-            int lhs = stack_pop(&vm->stack);
-            stack_push(&vm->stack,lhs*rhs);
+            execute_mul(vm);
             break;
         }
         case DIV: {
-            int rhs = stack_pop(&vm->stack);
-            int lhs = stack_pop(&vm->stack);
-            if(rhs == 0){
-                stack_push(&vm->stack,lhs);
-                stack_push(&vm->stack,rhs);
-                fprintf(stderr,"Division by zero !! ");
-                vm->running = false;
-                break;
-            }
-            stack_push(&vm->stack,lhs/rhs);
+            execute_div(vm);
             break;
         }
         case DUP: {
-            int duplicate = stack_peek(&vm->stack);
-            stack_push(&vm->stack,duplicate);
+            execute_dup(vm);
             break;
         }
         case SWP: {
-            int rhs = stack_pop(&vm->stack);
-            int lhs = stack_pop(&vm->stack);
-            stack_push(&vm->stack,rhs);
-            stack_push(&vm->stack,lhs);
+            execute_swp(vm);
             break;
         }
         case MOD: {
-            int rhs = stack_pop(&vm->stack);
-            int lhs = stack_pop(&vm->stack);
-            if(rhs == 0){
-                stack_push(&vm->stack,lhs);
-                stack_push(&vm->stack,rhs);
-                fprintf(stderr,"Modulo by zero !! ");
-                vm->running = false;
-                break;
-            }
-            stack_push(&vm->stack,lhs%rhs);
+            execute_mod(vm);
             break;
         }
         case NEG: {
-            if(stack_peek(&vm->stack) > 0){
-                int num = stack_pop(&vm->stack);
-                stack_push(&vm->stack,-num);
-                break;
-            }
+            execute_neg(vm);
             break;
         }
         case POS: {
-            if(stack_peek(&vm->stack) < 0){
-                int num = stack_pop(&vm->stack);
-                stack_push(&vm->stack,-num);
-                break;
-            }
+            execute_pos(vm);
             break;
         }
         case POP: {
-            stack_pop(&vm->stack);
+            execute_pop(vm);
             break;
         }
         default:
