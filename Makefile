@@ -1,7 +1,9 @@
 CC = clang
-CFLAGS = -Wall -Wextra -g -std=c11
+CFLAGS = -Wall -Wextra -g -std=c11 -Iinclude
 
-SRC = src/main.c
+SRC = src/main.c \
+      src/vm.c \
+      src/stack.c
 
 TARGET = mylangvm
 
