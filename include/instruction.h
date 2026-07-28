@@ -13,6 +13,12 @@ typedef enum{
     MOD, // Finds the modulo of two numbers and pushes the result back to the stack
     NEG, // Negate -> Makes the top element negative
     POS, // Makes the top element positive
+    GT, // Greater than -> Pops two elements, compares them for greater than, pushes the result in 0 or 1
+    GE, // Greater than or equal to -> Pops two elements, compares them for greater than or equal to, pushes the result in 0 or 1
+    EQ, // Equal to -> Compares if both the elements are equal or not
+    NE, // Not equal to -> Compares for "Not equal to operator"
+    LT, // Less than -> Compares for less than operator
+    LE, // Less Than or equal to -> Compares for less than or equal to operator
     POP, // Pops the last element of the stack
     HLT // Ends the program
 }Instruction;

@@ -52,6 +52,30 @@ void vm_execute_instruction(VM *vm, Instruction instr){
             execute_pos(vm);
             break;
         }
+        case GT: {
+            execute_gt(vm);
+            break;
+        }
+        case GE: {
+            execute_ge(vm);
+            break;
+        }
+        case EQ: {
+            execute_eq(vm);
+            break;
+        }
+        case NE: {
+            execute_ne(vm);
+            break;
+        }
+        case LT: {
+            execute_lt(vm);
+            break;
+        }
+        case LE: {
+            execute_le(vm);
+            break;
+        }
         case POP: {
             execute_pop(vm);
             break;

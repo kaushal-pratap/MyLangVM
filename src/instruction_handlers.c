@@ -71,6 +71,66 @@ void execute_pos(VM *vm){
     }
 }
 
+void execute_gt(VM *vm){
+    int rhs = stack_pop(&vm->stack);
+    int lhs = stack_pop(&vm->stack);
+    if(lhs > rhs){
+        stack_push(&vm->stack,1);
+    }else{
+        stack_push(&vm->stack,0);
+    }
+}
+
+void execute_ge(VM *vm){
+    int rhs = stack_pop(&vm->stack);
+    int lhs = stack_pop(&vm->stack);
+    if(lhs >= rhs){
+        stack_push(&vm->stack,1);
+    }else{
+        stack_push(&vm->stack,0);
+    }
+}
+
+void execute_eq(VM *vm){
+    int rhs = stack_pop(&vm->stack);
+    int lhs = stack_pop(&vm->stack);
+    if(lhs == rhs){
+        stack_push(&vm->stack,1);
+    }else{
+        stack_push(&vm->stack,0);
+    }
+}
+
+void execute_ne(VM *vm){
+    int rhs = stack_pop(&vm->stack);
+    int lhs = stack_pop(&vm->stack);
+    if(lhs != rhs){
+        stack_push(&vm->stack,1);
+    }else{
+        stack_push(&vm->stack,0);
+    }
+}
+
+void execute_lt(VM *vm){
+    int rhs = stack_pop(&vm->stack);
+    int lhs = stack_pop(&vm->stack);
+    if(lhs < rhs){
+        stack_push(&vm->stack,1);
+    }else{
+        stack_push(&vm->stack,0);
+    }
+}
+
+void execute_le(VM *vm){
+    int rhs = stack_pop(&vm->stack);
+    int lhs = stack_pop(&vm->stack);
+    if(lhs <= rhs){
+        stack_push(&vm->stack,1);
+    }else{
+        stack_push(&vm->stack,0);
+    }
+}
+
 void execute_pop(VM *vm){
     stack_pop(&vm->stack);
 }
