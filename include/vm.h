@@ -11,6 +11,8 @@ typedef struct{
     bool running;
     size_t programLength;
     const int *program;
+    size_t instructionCount;
+    size_t *instructionMapArray;
 }VM;
 
 // Function to fetch the current instruction

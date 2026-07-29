@@ -131,6 +131,29 @@ void execute_le(VM *vm){
     }
 }
 
+void execute_jmp(VM *vm){
+    vm->pc = vm->instructionMapArray[vm->program[++vm->pc]];
+}
+
+void execute_jz(VM *vm){
+    if(stack_peek(&vm->stack) == 0){
+        vm->pc = vm->instructionMapArray[vm->program[++vm->pc]];
+    }else{
+        vm->pc+=2;
+    }
+    stack_pop(&vm->stack);
+    
+}
+
+void execute_jnz(VM *vm){
+    if(stack_peek(&vm->stack) != 0){
+        vm->pc = vm->instructionMapArray[vm->program[++vm->pc]];
+    }else{
+        vm->pc+=2;
+    }
+    stack_pop(&vm->stack);
+}
+
 void execute_pop(VM *vm){
     stack_pop(&vm->stack);
 }

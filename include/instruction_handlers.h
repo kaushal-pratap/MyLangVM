@@ -19,6 +19,9 @@ void execute_eq(VM *vm);
 void execute_ne(VM *vm);
 void execute_lt(VM *vm);
 void execute_le(VM *vm);
+void execute_jmp(VM *vm);
+void execute_jz(VM *vm);
+void execute_jnz(VM *vm);
 void execute_pop(VM *vm);
 void execute_hlt(VM *vm);
 
