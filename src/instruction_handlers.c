@@ -132,12 +132,16 @@ void execute_le(VM *vm){
 }
 
 void execute_jmp(VM *vm){
-    vm->pc = vm->instructionMapArray[vm->program[++vm->pc]];
+    ++vm->pc;
+    size_t target = vm->program[vm->pc];
+    vm->pc = vm->instructionMapArray[target];
 }
 
 void execute_jz(VM *vm){
     if(stack_peek(&vm->stack) == 0){
-        vm->pc = vm->instructionMapArray[vm->program[++vm->pc]];
+        ++vm->pc;
+        size_t target = vm->program[vm->pc];
+        vm->pc = vm->instructionMapArray[target];
     }else{
         vm->pc+=2;
     }
@@ -147,7 +151,9 @@ void execute_jz(VM *vm){
 
 void execute_jnz(VM *vm){
     if(stack_peek(&vm->stack) != 0){
-        vm->pc = vm->instructionMapArray[vm->program[++vm->pc]];
+        ++vm->pc;
+        size_t target = vm->program[vm->pc];
+        vm->pc = vm->instructionMapArray[target];
     }else{
         vm->pc+=2;
     }

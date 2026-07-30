@@ -1,6 +1,7 @@
 #ifndef INSTRUCTION_H
 #define INSTRUCTION_H
-
+#include<stdbool.h>
+#include<stdlib.h>
 // Creating enumration, same as [#define] but [enum] auto-indexes the elements and replaces the words same as like [#define] do
 typedef enum{
     PSH, // Pushes a number to the stack
@@ -26,4 +27,6 @@ typedef enum{
     HLT // Ends the program
 }Instruction;
 
+size_t instruction_size(Instruction instr);
+bool is_pc_modified(Instruction instr);
 #endif

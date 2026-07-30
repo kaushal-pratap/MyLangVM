@@ -1,6 +1,5 @@
 #ifndef VM_H
 #define VM_H
-#include "vm.h"
 #include "stack.h"
 #include "instruction.h"
 
@@ -15,6 +14,7 @@ typedef struct{
     size_t *instructionMapArray;
 }VM;
 
+void build_instruction_map(VM *vm, const int *program, size_t programLength);
 // Function to fetch the current instruction
 Instruction vm_fetch_instruction(VM *vm);
 
