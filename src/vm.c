@@ -125,7 +125,8 @@ void vm_init(VM *vm, const int *program, size_t programLength){
     vm->running = true;
     vm->programLength = programLength;
     vm->program = program;
-    stack_init(&vm->stack);
+    stack_init(&vm->operandStack);
+    stack_init(&vm->callStack);
     build_instruction_map(vm, program, programLength);
 }
 

@@ -47,9 +47,9 @@ const int program[] = {
 
         PSH, 0,
         PSH,5,
-        JMP,5,
         PSH,6,
-        PSH,6,
+        PSH,7,
+        PSH,8,
         HLT
     };
 

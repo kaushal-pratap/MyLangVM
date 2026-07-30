@@ -5,7 +5,8 @@
 
 // Defining a structure for VM separately, which will allow us to run multiple VM instances
 typedef struct{
-    Stack stack;
+    Stack operandStack;
+    Stack callStack;
     size_t pc;
     bool running;
     size_t programLength;
