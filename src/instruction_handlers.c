@@ -160,6 +160,15 @@ void execute_jnz(VM *vm){
     stack_pop(&vm->operandStack);
 }
 
+void execute_call(VM *vm){
+    stack_push(&vm->callStack, vm->pc + 2);
+    execute_jmp(vm);
+}
+
+void execute_ret(VM *vm){
+   vm->pc = stack_pop(&vm->callStack);
+}
+
 void execute_pop(VM *vm){
     stack_pop(&vm->operandStack);
 }

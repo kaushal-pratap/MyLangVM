@@ -24,5 +24,7 @@ void execute_jz(VM *vm);
 void execute_jnz(VM *vm);
 void execute_pop(VM *vm);
 void execute_hlt(VM *vm);
+void execute_call(VM *vm);
+void execute_ret(VM *vm);
 
 #endif

@@ -88,6 +88,14 @@ void vm_execute_instruction(VM *vm, Instruction instr){
             execute_jnz(vm);
             break;
         }
+        case CALL: {
+            execute_call(vm);
+            break;
+        }
+        case RET: {
+            execute_ret(vm);
+            break;
+        }
         case POP: {
             execute_pop(vm);
             break;

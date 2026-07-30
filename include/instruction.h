@@ -23,6 +23,8 @@ typedef enum{
     JMP, // Jump -> Takes a value to jumps at an instruction, the number of instruction to jump on
     JZ, // Jump if zero -> Jumps to the desired instruction when top element of the stack is zero
     JNZ, // Jump if not zero -> Jumps to the desired instruction when top element of the stack is not zero
+    CALL, // Calls a function -> In other words, we jump to some other instruction and come back using [RET] to the next instruction where we have to continue from before we jumped
+    RET, // Return -> We return to the instruction where we have to continue after function call
     POP, // Pops the last element of the stack
     HLT // Ends the program
 }Instruction;

@@ -45,12 +45,33 @@ const int program[] = {
         // LE,
         // HLT
 
-        PSH, 0,
-        PSH,5,
-        PSH,6,
-        PSH,7,
-        PSH,8,
-        HLT
+        // PSH, 0,
+        // PSH,5,
+        // PSH,6,
+        // PSH,7,
+        // PSH,8,
+        // HLT
+
+        PSH,1000,
+        PSH,2000,
+        CALL,6,
+        CALL,10,
+        CALL,14,
+        HLT,
+
+        PSH,3000,
+        PSH,4000,
+        PSH,5000,
+        RET,
+
+        PSH,6000,      
+        PSH,7000,
+        PSH,8000,
+        RET,
+
+        PSH,9000,
+        PSH,10000,
+        RET
     };
 
 //Our main function where we initialize our stack and run the vm

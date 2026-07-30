@@ -5,6 +5,7 @@ size_t instruction_size(Instruction instr){
         case JMP:
         case JZ:
         case JNZ: 
+        case CALL:
         return 2;
 
         default:
@@ -17,6 +18,8 @@ bool is_pc_modified(Instruction instr){
         case JMP:
         case JZ:
         case JNZ:
+        case CALL:
+        case RET:
         return true;
 
         default:
