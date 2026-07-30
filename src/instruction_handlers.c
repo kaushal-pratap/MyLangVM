@@ -134,6 +134,11 @@ void execute_le(VM *vm){
 void execute_jmp(VM *vm){
     ++vm->pc;
     size_t target = vm->program[vm->pc];
+    if(target >= vm->instructionCount){
+        fprintf(stderr,"Invalid jump target !!");
+        vm->running = false;
+        return;
+    }
     vm->pc = vm->instructionMapArray[target];
 }
 
@@ -141,7 +146,12 @@ void execute_jz(VM *vm){
     if(stack_peek(&vm->operandStack) == 0){
         ++vm->pc;
         size_t target = vm->program[vm->pc];
-        vm->pc = vm->instructionMapArray[target];
+        if(target >= vm->instructionCount){
+        fprintf(stderr,"Invalid jump target !!");
+        vm->running = false;
+        return;
+    }
+    vm->pc = vm->instructionMapArray[target];
     }else{
         vm->pc+=2;
     }
@@ -153,6 +163,11 @@ void execute_jnz(VM *vm){
     if(stack_peek(&vm->operandStack) != 0){
         ++vm->pc;
         size_t target = vm->program[vm->pc];
+        if(target >= vm->instructionCount){
+        fprintf(stderr,"Invalid jump target !!");
+        vm->running = false;
+        return;
+    }
         vm->pc = vm->instructionMapArray[target];
     }else{
         vm->pc+=2;
@@ -167,6 +182,37 @@ void execute_call(VM *vm){
 
 void execute_ret(VM *vm){
    vm->pc = stack_pop(&vm->callStack);
+}
+
+void execute_store(VM *vm){
+    int memory_index = vm->program[++vm->pc];
+    if(memory_index < 0 || memory_index >= MEMORY_SIZE){
+        fprintf(stderr,"Invalid memory access !! \n");
+        vm->running = false;
+        return;
+    }
+    vm->memory[memory_index] = stack_pop(&vm->operandStack);
+}
+
+void execute_load(VM *vm){
+    int memory_index = vm->program[++vm->pc];
+    if(memory_index < 0 || memory_index >= MEMORY_SIZE){
+        fprintf(stderr,"Invalid memory access !! \n");
+        vm->running = false;
+        return;
+    }
+    stack_push(&vm->operandStack,vm->memory[memory_index]);
+}
+
+void execute_inpt(VM *vm){
+    int user_input;
+    printf("Enter the value : ");
+    scanf("%d", &user_input);
+    stack_push(&vm->operandStack, user_input);
+}
+
+void execute_prnt(VM *vm){
+    printf("The top element is : %d\n",stack_pop(&vm->operandStack));
 }
 
 void execute_pop(VM *vm){

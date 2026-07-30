@@ -25,6 +25,10 @@ typedef enum{
     JNZ, // Jump if not zero -> Jumps to the desired instruction when top element of the stack is not zero
     CALL, // Calls a function -> In other words, we jump to some other instruction and come back using [RET] to the next instruction where we have to continue from before we jumped
     RET, // Return -> We return to the instruction where we have to continue after function call
+    STORE, // Takes the top element of stack, pops it, and stores it into the memory
+    LOAD, // Copies the element at desired index from memory to the top of stack
+    INPT, // Input -> Takes the input from user and pushes onto the top of stack
+    PRNT, // Print-> Pop the top value of stack and displays the value on screen
     POP, // Pops the last element of the stack
     HLT // Ends the program
 }Instruction;

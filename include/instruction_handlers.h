@@ -26,5 +26,9 @@ void execute_pop(VM *vm);
 void execute_hlt(VM *vm);
 void execute_call(VM *vm);
 void execute_ret(VM *vm);
+void execute_store(VM *vm);
+void execute_load(VM *vm);
+void execute_inpt(VM *vm);
+void execute_prnt(VM *vm);
 
 #endif

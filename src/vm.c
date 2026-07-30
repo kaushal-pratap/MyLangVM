@@ -96,6 +96,22 @@ void vm_execute_instruction(VM *vm, Instruction instr){
             execute_ret(vm);
             break;
         }
+        case STORE: {
+            execute_store(vm);
+            break;
+        }
+        case LOAD: {
+            execute_load(vm);
+            break;
+        }
+        case INPT: {
+            execute_inpt(vm);
+            break;
+        }
+        case PRNT: {
+            execute_prnt(vm);
+            break;
+        }
         case POP: {
             execute_pop(vm);
             break;
@@ -124,7 +140,6 @@ static void build_instruction_map(VM *vm, const int *program, size_t programLeng
         program_index += instruction_size(program[program_index]);
         instruction_index++;
     }
-
 }
 
 // Function to initialize our VM
@@ -142,8 +157,9 @@ void vm_init(VM *vm, const int *program, size_t programLength){
 // Function to call each VM step individually 
 void vm_step(VM *vm){
     if(vm->pc >= vm->programLength){
-        fprintf(stderr,"Program counter out of bounds !! ");
-        exit(EXIT_FAILURE);
+        fprintf(stderr,"Program Counter out of bounds !!");
+        vm->running = false;
+        return;
     }
     Instruction instr = vm_fetch_instruction(vm);
     vm_execute_instruction(vm,instr);

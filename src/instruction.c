@@ -6,6 +6,8 @@ size_t instruction_size(Instruction instr){
         case JZ:
         case JNZ: 
         case CALL:
+        case STORE:
+        case LOAD:
         return 2;
 
         default:

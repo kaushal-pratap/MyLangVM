@@ -52,26 +52,48 @@ const int program[] = {
         // PSH,8,
         // HLT
 
-        PSH,1000,
-        PSH,2000,
-        CALL,6,
-        CALL,10,
-        CALL,14,
-        HLT,
+        // PSH,1000,
+        // PSH,2000,
+        // CALL,6,
+        // CALL,10,
+        // CALL,14,
+        // HLT,
 
-        PSH,3000,
-        PSH,4000,
-        PSH,5000,
-        RET,
+        // PSH,3000,
+        // PSH,4000,
+        // PSH,5000,
+        // RET,
 
-        PSH,6000,      
-        PSH,7000,
-        PSH,8000,
-        RET,
+        // PSH,6000,      
+        // PSH,7000,
+        // PSH,8000,
+        // RET,
 
-        PSH,9000,
-        PSH,10000,
-        RET
+        // PSH,9000,
+        // PSH,10000,
+        // RET
+        // PSH,5,
+        // CALL,3,
+        // HLT,
+        // CALL,5,
+        // RET,
+        // CALL,7,
+        // RET,
+        // PSH,10000,
+        // RET
+        // PSH,5,
+        // STORE,0,
+        // PSH,1,
+        // STORE,1,
+        // LOAD,0,
+        // LOAD,1,
+        // ADD,
+        // STORE,2,
+
+        PSH,5,
+        INPT,
+        PRNT,
+        HLT
     };
 
 //Our main function where we initialize our stack and run the vm

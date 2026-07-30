@@ -3,10 +3,12 @@
 #include "stack.h"
 #include "instruction.h"
 
+#define MEMORY_SIZE 1024
 // Defining a structure for VM separately, which will allow us to run multiple VM instances
 typedef struct{
     Stack operandStack;
     Stack callStack;
+    int memory[MEMORY_SIZE];
     size_t pc;
     bool running;
     size_t programLength;
