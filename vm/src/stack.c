@@ -21,7 +21,7 @@ void stack_push(Stack *stack, int value){
         fprintf(stderr,"Stack Overflow ! ");
         exit(EXIT_FAILURE);
     }
-    printf("The element is pushed : %d\n",value);
+    // printf("The element is pushed : %d\n",value);
     stack->arr[++stack->top] = value;
 }
 
@@ -32,7 +32,7 @@ int stack_pop(Stack *stack){
         exit(EXIT_FAILURE);
     }
     int value = stack->arr[stack->top];
-    printf("The element is popped : %d\n",value);
+    // printf("The element is popped : %d\n",value);
     stack->top--;
     return value;
 }

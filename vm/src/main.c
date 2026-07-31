@@ -89,9 +89,9 @@ const int program[] = {
         // LOAD,1,
         // ADD,
         // STORE,2,
-
-        PSH,5,
         INPT,
+        INPT,
+        ADD,
         PRNT,
         HLT
     };

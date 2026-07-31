@@ -212,7 +212,7 @@ void execute_inpt(VM *vm){
 }
 
 void execute_prnt(VM *vm){
-    printf("The top element is : %d\n",stack_pop(&vm->operandStack));
+    printf("%d\n",stack_pop(&vm->operandStack));
 }
 
 void execute_pop(VM *vm){
