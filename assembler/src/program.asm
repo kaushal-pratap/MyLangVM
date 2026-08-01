@@ -1,11 +1,10 @@
-PUSH     kauSHAl   123456
-
-
-
-
-PSH 6     
-         ADD
-HLT 
-hello. 
-
-jiiii
+123
+-1
+-1-2
+1-2
+-
+--
+--5
+12abc
+abc12
+0005

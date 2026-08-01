@@ -5,7 +5,7 @@
 // Here we define the type of tokens we will parse.
 typedef enum TokenType {
     TOKEN_IDENTIFIER, // An identifier such as "PSH" or "loop".
-    TOKEN_NUMBER, // A numeric literal
+    TOKEN_INTEGER, // A numeric literal
     TOKEN_NEWLINE, // The tokenizer encountered a newline character.
     TOKEN_END_OF_FILE, // It means we've completed reading the file 
     TOKEN_INVALID, // An unrecognized or invalid character sequence.

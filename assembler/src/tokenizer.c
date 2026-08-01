@@ -2,6 +2,7 @@
 #include "tokenizer.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 void push_token(Token *token_array, size_t *token_array_count, char *start, size_t line, size_t column,size_t length){
     if(*token_array_count >= TOKEN_ARRAY_SIZE){
@@ -9,7 +10,7 @@ void push_token(Token *token_array, size_t *token_array_count, char *start, size
         return;
     }
     token_array[*token_array_count] = (Token){
-        .type = TOKEN_IDENTIFIER,
+        .type = token_type(start,length),
         .length = length,
         .start = start,
         .line = line,
@@ -19,7 +20,7 @@ void push_token(Token *token_array, size_t *token_array_count, char *start, size
     
 }
 
-void complete_token(Token *token_array, size_t *token_array_count, char **start, char *current, size_t line, char *line_start){
+void emit_token(Token *token_array, size_t *token_array_count, char **start, char *current, size_t line, char *line_start){
     if(*start == current){
         *start = current + 1;
         return;
@@ -40,24 +41,66 @@ void tokenize(char* buffer){
 
     while(*current != '\0'){
 
-        if(*current == ' '){
-            complete_token(token_array, &token_array_count, &start, current, line, line_start);
-        }else if(*current == '\n'){
-            complete_token(token_array, &token_array_count, &start, current, line, line_start);
-            line++;
-            line_start = current+1;
+        if(is_whitespace(*current)){
+            emit_token(token_array, &token_array_count, &start, current, line, line_start);
+            if(*current == '\n'){
+                line++;
+                line_start = current+1;
+            }
         }
-
         current++;
     }
     // 1. Push any trailing token if file doesn't end with space or newline
-    complete_token(token_array, &token_array_count, &start,current, line, line_start
-);
+    emit_token(token_array, &token_array_count, &start,current, line, line_start);
 
     // Loop to iterate in every token array and to print line and column of each
     for(size_t i = 0; i < token_array_count; i++){
+        printf("%.*s\n",(int)token_array[i].length,token_array[i].start);
+        if(token_array[i].type == TOKEN_INTEGER){
+            printf("Token type : Integer\n");
+        }else{
+            printf("Token type : Identifier\n");
+        }
         printf("Length : %zu\n",token_array[i].length);
         printf("line and column : %zu,%zu\n",token_array[i].line,token_array[i].column);
         printf("\n");
     }
+}
+
+bool is_whitespace(char c){
+    return c == ' ' ||
+           c == '\n' || 
+           c == '\t' ||
+           c == '\r';
+}
+
+TokenType token_type(char *start, size_t length) {
+
+    if(is_integer(start, length)){
+        return TOKEN_INTEGER;
+    }else{
+        return TOKEN_IDENTIFIER;
+    }
+
+}
+
+bool is_integer(char *start, size_t length){
+    if(length == 0){
+        return false;
+    }
+    if(*start == '-'){
+        length--;
+        start++;
+    }
+    if(length == 0){
+        return false;
+    }
+    while(length > 0){
+        if(*start < '0' || *start > '9'){
+            return false;
+        }
+        start++;
+        length--;
+    }
+    return true;
 }
