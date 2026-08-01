@@ -4,12 +4,10 @@ CFLAGS = -Wall -Wextra -g -std=c11 \
 		-I../common
 
 SRC = src/main.c \
-      src/vm.c \
-      src/stack.c \
-	  src/instruction_handlers.c \
-	  src/instruction.c
+      src/tokenizer.c \
+	  src/opcode_table.c
 
-TARGET = mylangvm
+TARGET = mylangasm
 
 all:
 	$(CC) $(SRC) $(CFLAGS) -o $(TARGET)

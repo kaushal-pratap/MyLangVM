@@ -1,0 +1,42 @@
+[
+  {
+    "directory": "/Users/kaushal/Desktop/MyLangVM/vm",
+    "command": "clang -Wall -Wextra -g -std=c11 -Iinclude -I../common -c src/main.c",
+    "file": "/Users/kaushal/Desktop/MyLangVM/vm/src/main.c"
+  },
+  {
+    "directory": "/Users/kaushal/Desktop/MyLangVM/vm",
+    "command": "clang -Wall -Wextra -g -std=c11 -Iinclude -I../common -c src/vm.c",
+    "file": "/Users/kaushal/Desktop/MyLangVM/vm/src/vm.c"
+  },
+  {
+    "directory": "/Users/kaushal/Desktop/MyLangVM/vm",
+    "command": "clang -Wall -Wextra -g -std=c11 -Iinclude -I../common -c src/stack.c",
+    "file": "/Users/kaushal/Desktop/MyLangVM/vm/src/stack.c"
+  },
+  {
+    "directory": "/Users/kaushal/Desktop/MyLangVM/vm",
+    "command": "clang -Wall -Wextra -g -std=c11 -Iinclude -I../common -c src/instruction_handlers.c",
+    "file": "/Users/kaushal/Desktop/MyLangVM/vm/src/instruction_handlers.c"
+  },
+  {
+    "directory": "/Users/kaushal/Desktop/MyLangVM/vm",
+    "command": "clang -Wall -Wextra -g -std=c11 -Iinclude -I../common -c src/instruction.c",
+    "file": "/Users/kaushal/Desktop/MyLangVM/vm/src/instruction.c"
+  },
+  {
+    "directory": "/Users/kaushal/Desktop/MyLangVM/assembler",
+    "command": "clang -Wall -Wextra -g -std=c11 -Iinclude -I../common -c src/main.c",
+    "file": "/Users/kaushal/Desktop/MyLangVM/assembler/src/main.c"
+  },
+  {
+    "directory": "/Users/kaushal/Desktop/MyLangVM/assembler",
+    "command": "clang -Wall -Wextra -g -std=c11 -Iinclude -I../common -c src/opcode_table.c",
+    "file": "/Users/kaushal/Desktop/MyLangVM/assembler/src/opcode_table.c"
+  },
+  {
+    "directory": "/Users/kaushal/Desktop/MyLangVM/assembler",
+    "command": "clang -Wall -Wextra -g -std=c11 -Iinclude -I../common -c src/tokenizer.c",
+    "file": "/Users/kaushal/Desktop/MyLangVM/assembler/src/tokenizer.c"
+  }
+]
