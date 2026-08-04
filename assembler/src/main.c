@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "tokenizer.h"
+#include "parser.h"
 
 int main(void) {
     FILE *file_pointer;
@@ -17,8 +18,10 @@ int main(void) {
     fread(buffer,sizeof(char),file_size,file_pointer);
     buffer[file_size] = '\0';
     fclose(file_pointer);
-
-    tokenize(buffer);
+    Token token_array[TOKEN_ARRAY_SIZE];
+    size_t token_array_count = 0;
+    tokenize(token_array, &token_array_count, buffer);
+    parse(token_array, &token_array_count);
 
 	return 0;
 }

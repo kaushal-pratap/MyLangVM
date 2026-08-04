@@ -31,9 +31,8 @@ void emit_token(Token *token_array, size_t *token_array_count, char **start, cha
     *start = current+1;    
 }
 
-void tokenize(char* buffer){
-    Token token_array[TOKEN_ARRAY_SIZE];
-    size_t token_array_count = 0;
+void tokenize(Token* token_array, size_t *token_array_count, char* buffer){
+    
     char *current = buffer;
     char *start = buffer;
     char *line_start = buffer;
@@ -42,7 +41,7 @@ void tokenize(char* buffer){
     while(*current != '\0'){
 
         if(is_whitespace(*current)){
-            emit_token(token_array, &token_array_count, &start, current, line, line_start);
+            emit_token(token_array, token_array_count, &start, current, line, line_start);
             if(*current == '\n'){
                 line++;
                 line_start = current+1;
@@ -51,20 +50,21 @@ void tokenize(char* buffer){
         current++;
     }
     // 1. Push any trailing token if file doesn't end with space or newline
-    emit_token(token_array, &token_array_count, &start,current, line, line_start);
+    emit_token(token_array, token_array_count, &start,current, line, line_start);
 
     // Loop to iterate in every token array and to print line and column of each
-    for(size_t i = 0; i < token_array_count; i++){
-        printf("%.*s\n",(int)token_array[i].length,token_array[i].start);
-        if(token_array[i].type == TOKEN_INTEGER){
-            printf("Token type : Integer\n");
-        }else{
-            printf("Token type : Identifier\n");
-        }
-        printf("Length : %zu\n",token_array[i].length);
-        printf("line and column : %zu,%zu\n",token_array[i].line,token_array[i].column);
-        printf("\n");
-    }
+    // for(size_t i = 0; i < *token_array_count; i++){
+    //     printf("%.*s\n",(int)token_array[i].length,token_array[i].start);
+    //     if(token_array[i].type == TOKEN_INTEGER){
+    //         printf("Token type : Integer\n");
+    //     }else{
+    //         printf("Token type : Identifier\n");
+    //     }
+    //     printf("Length : %zu\n",token_array[i].length);
+    //     printf("line and column : %zu,%zu\n",token_array[i].line,token_array[i].column);
+    //     printf("khikhiki, i moved token array count to main.c");
+    //     printf("\n");
+    // }
 }
 
 bool is_whitespace(char c){

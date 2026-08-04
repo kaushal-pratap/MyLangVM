@@ -1,10 +1,6 @@
-123
--1
--1-2
-1-2
--
---
---5
-12abc
-abc12
-0005
+Push 23
+AdD
+MU
+SUB
+JUMP 14
+JUMP abc
