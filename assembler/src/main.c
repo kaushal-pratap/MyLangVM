@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "tokenizer.h"
 #include "parser.h"
+#include "instruction.h"
 
 int main(void) {
     FILE *file_pointer;
@@ -21,7 +22,8 @@ int main(void) {
     Token token_array[TOKEN_ARRAY_SIZE];
     size_t token_array_count = 0;
     tokenize(token_array, &token_array_count, buffer);
-    parse(token_array, &token_array_count);
+    Program program = {0};
+    parse(token_array, token_array_count, &program);
 
 	return 0;
 }
