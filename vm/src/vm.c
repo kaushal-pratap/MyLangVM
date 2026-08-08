@@ -174,3 +174,9 @@ void vm_run(VM *vm){
         vm_step(vm);
     };
 }
+
+void vm_destroy(VM *vm) {
+    free(vm->instructionMapArray);
+    vm->instructionMapArray = NULL;
+    vm->instructionCount = 0;
+}

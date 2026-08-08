@@ -6,9 +6,14 @@
 #include "instruction.h"
 #include "serializer.h"
 
-int main(void) {
-    FILE *file_pointer;
-    file_pointer = fopen("src/program.asm","r");
+int main(int argc, char *argv[]) {
+    if (argc != 3) {
+        fprintf(stderr,"Usage: %s <input.asm> <output.mylangvm>\n",argv[0]);
+        return 1;
+    }
+    
+    FILE *file_pointer = fopen(argv[1], "r");
+
     if (file_pointer == NULL) {
         fprintf(stderr, "Error: Could not open program.asm\n");
         return 1;
@@ -25,6 +30,11 @@ int main(void) {
     tokenize(token_array, &token_array_count, buffer);
     Program program = {0};
     parse(token_array, token_array_count, &program);
-    serialize(&program);
+    serialize(&program, argv[2]);
+    if (!serialize(&program, argv[2])) {
+        return EXIT_FAILURE;
+    }
+    free(buffer);
+    buffer = NULL;
 	return 0;
 }

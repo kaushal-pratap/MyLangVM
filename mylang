@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <source-file.asm>"
+    exit 1
+fi
+
+./build/assembler/mylangasm \
+    "$1" \
+    build/bytecode/bytecode.mylangvm || exit 1
+
+./build/vm/mylangvm \
+    build/bytecode/bytecode.mylangvm

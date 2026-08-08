@@ -7,3 +7,7 @@ mylangvm
 main.dSYM/
 mylangvm.dSYM/
 main
+
+build/
+*.dSYM
+*.o

@@ -48,8 +48,8 @@ static VmInstruction assembler_opcode_to_vm_opcode(Opcode assembler_opcode){
     exit(EXIT_FAILURE);
 }
 
-void serialize(const Program *program){
-    FILE *file = fopen("bytecode.mylangvm","wb");
+bool serialize(const Program *program, const char *filename){
+    FILE *file = fopen(filename, "wb");
     if (file == NULL) {
         fprintf(stderr, "Could not create bytecode.mylangvm\n");
         exit(EXIT_FAILURE);
@@ -71,7 +71,9 @@ void serialize(const Program *program){
         }
     }
     if (fclose(file) == EOF) {
-        fprintf(stderr, "Failed to close bytecode.mylangvm\n");
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "Failed to close output file\n");
+        return false;
     }
+
+    return true;
 }

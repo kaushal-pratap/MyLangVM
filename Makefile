@@ -1,16 +1,20 @@
-CC = clang
-CFLAGS = -Wall -Wextra -g -std=c11 -Iinclude
+.PHONY: all assembler vm run clean
 
-SRC = src/main.c \
-      src/vm.c \
-      src/stack.c \
-	  src/instruction_handlers.c \
-	  src/instruction.c
+PROGRAM ?= examples/arithmetic/add.asm
 
-TARGET = mylangvm
+all: assembler vm
 
-all:
-	$(CC) $(SRC) $(CFLAGS) -o $(TARGET)
+assembler:
+	$(MAKE) -C assembler
+
+vm:
+	$(MAKE) -C vm
+
+run: all
+	./build/assembler/mylangasm $(PROGRAM)
+	./build/vm/mylangvm ./build/bytecode/bytecode.mylangvm
 
 clean:
-	rm -f $(TARGET)
+	$(MAKE) -C assembler clean
+	$(MAKE) -C vm clean
+	rm -rf build/*

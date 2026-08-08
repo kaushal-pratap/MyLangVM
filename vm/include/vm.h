@@ -32,4 +32,6 @@ void vm_step(VM *vm);
 // Function to run the VM
 void vm_run(VM *vm);
 
+void vm_destroy(VM *vm);
+
 #endif
