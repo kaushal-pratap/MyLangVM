@@ -2,7 +2,7 @@
 
 // Function to fetch the current instruction
 VmInstruction vm_fetch_instruction(VM *vm){
-    return vm->program[vm->pc];
+    return (VmInstruction)vm->program[vm->pc];
 }
 
 // Function to execute the instructions
@@ -123,7 +123,7 @@ void vm_execute_instruction(VM *vm, VmInstruction instr){
     }
     
 }
-static void build_instruction_map(VM *vm, const int *program, size_t programLength){
+static void build_instruction_map(VM *vm, const int32_t *program, size_t programLength){
     vm->instructionCount = 0;
     size_t i = 0;
     while(i < programLength){
@@ -131,7 +131,10 @@ static void build_instruction_map(VM *vm, const int *program, size_t programLeng
         i += instruction_size(program[i]);
     }
     vm->instructionMapArray = malloc(vm->instructionCount*sizeof(size_t));
-
+    if (vm->instructionMapArray == NULL) {
+        fprintf(stderr, "Failed to allocate instruction map\n");
+        exit(EXIT_FAILURE);
+    }
     size_t instruction_index = 0;
     size_t program_index = 0;
 
@@ -143,7 +146,7 @@ static void build_instruction_map(VM *vm, const int *program, size_t programLeng
 }
 
 // Function to initialize our VM
-void vm_init(VM *vm, const int *program, size_t programLength){
+void vm_init(VM *vm, const int32_t *program, size_t programLength){
     vm->pc = 0;
     vm->running = true;
     vm->programLength = programLength;

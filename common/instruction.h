@@ -2,6 +2,7 @@
 #define INSTRUCTION_H
 #include<stdbool.h>
 #include<stdlib.h>
+#include <stdint.h>
 #include "opcode_table.h"
 // Creating enumration, same as [#define] but [enum] auto-indexes the elements and replaces the words same as like [#define] do
 typedef enum{
@@ -36,7 +37,7 @@ typedef enum{
 
 typedef struct IRInstruction{
     Opcode opcode;
-    int operand;
+    int32_t operand;
     bool has_operand;
 } IRInstruction;
 

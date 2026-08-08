@@ -2,17 +2,18 @@
 #define VM_H
 #include "stack.h"
 #include "instruction.h"
+#include <stdint.h>
 
 #define MEMORY_SIZE 1024
 // Defining a structure for VM separately, which will allow us to run multiple VM instances
 typedef struct{
     Stack operandStack;
     Stack callStack;
-    int memory[MEMORY_SIZE];
+    int32_t memory[MEMORY_SIZE];
     size_t pc;
     bool running;
     size_t programLength;
-    const int *program;
+    const int32_t *program;
     size_t instructionCount;
     size_t *instructionMapArray;
 }VM;
@@ -24,7 +25,7 @@ VmInstruction vm_fetch_instruction(VM *vm);
 void vm_execute_instruction(VM *vm, VmInstruction instr);
 
 // Function to initialize our VM
-void vm_init(VM *vm, const int *program, size_t programLength);
+void vm_init(VM *vm, const int32_t *program, size_t programLength);
 
 // Function to call each VM step individually 
 void vm_step(VM *vm);

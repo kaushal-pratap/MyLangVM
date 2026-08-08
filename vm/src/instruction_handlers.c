@@ -1,30 +1,30 @@
 #include "instruction_handlers.h"
-
+#include <inttypes.h>
 void execute_psh(VM *vm){
     stack_push(&vm->operandStack,vm->program[++vm->pc]);
 }
 
 void execute_add(VM *vm){
-    int rhs = stack_pop(&vm->operandStack);
-    int lhs = stack_pop(&vm->operandStack);
+    int32_t rhs = stack_pop(&vm->operandStack);
+    int32_t lhs = stack_pop(&vm->operandStack);
     stack_push(&vm->operandStack,lhs+rhs);
 }
 
 void execute_sub(VM *vm){
-    int rhs = stack_pop(&vm->operandStack);
-    int lhs = stack_pop(&vm->operandStack);
+    int32_t rhs = stack_pop(&vm->operandStack);
+    int32_t lhs = stack_pop(&vm->operandStack);
     stack_push(&vm->operandStack,lhs-rhs);
 }
 
 void execute_mul(VM *vm){
-    int rhs = stack_pop(&vm->operandStack);
-    int lhs = stack_pop(&vm->operandStack);
+    int32_t rhs = stack_pop(&vm->operandStack);
+    int32_t lhs = stack_pop(&vm->operandStack);
     stack_push(&vm->operandStack,lhs*rhs);
 }
 
 void execute_div(VM *vm){
-    int rhs = stack_pop(&vm->operandStack);
-    int lhs = stack_pop(&vm->operandStack);
+    int32_t rhs = stack_pop(&vm->operandStack);
+    int32_t lhs = stack_pop(&vm->operandStack);
     if(rhs == 0){
         stack_push(&vm->operandStack,lhs);
         stack_push(&vm->operandStack,rhs);
@@ -35,20 +35,20 @@ void execute_div(VM *vm){
 }
 
 void execute_dup(VM *vm){
-    int duplicate = stack_peek(&vm->operandStack);
+    int32_t duplicate = stack_peek(&vm->operandStack);
     stack_push(&vm->operandStack,duplicate);
 }
 
 void execute_swp(VM *vm){
-    int rhs = stack_pop(&vm->operandStack);
-    int lhs = stack_pop(&vm->operandStack);
+    int32_t rhs = stack_pop(&vm->operandStack);
+    int32_t lhs = stack_pop(&vm->operandStack);
     stack_push(&vm->operandStack,rhs);
     stack_push(&vm->operandStack,lhs);
 }
 
 void execute_mod(VM *vm){
-    int rhs = stack_pop(&vm->operandStack);
-    int lhs = stack_pop(&vm->operandStack);
+    int32_t rhs = stack_pop(&vm->operandStack);
+    int32_t lhs = stack_pop(&vm->operandStack);
     if(rhs == 0){
         stack_push(&vm->operandStack,lhs);
         stack_push(&vm->operandStack,rhs);
@@ -60,20 +60,20 @@ void execute_mod(VM *vm){
 
 void execute_neg(VM *vm){
     if(stack_peek(&vm->operandStack) > 0){
-        int num = stack_pop(&vm->operandStack);
+        int32_t num = stack_pop(&vm->operandStack);
         stack_push(&vm->operandStack,-num);
     }
 }
 void execute_pos(VM *vm){
     if(stack_peek(&vm->operandStack) < 0){
-        int num = stack_pop(&vm->operandStack);
+        int32_t num = stack_pop(&vm->operandStack);
         stack_push(&vm->operandStack,-num);
     }
 }
 
 void execute_gt(VM *vm){
-    int rhs = stack_pop(&vm->operandStack);
-    int lhs = stack_pop(&vm->operandStack);
+    int32_t rhs = stack_pop(&vm->operandStack);
+    int32_t lhs = stack_pop(&vm->operandStack);
     if(lhs > rhs){
         stack_push(&vm->operandStack,1);
     }else{
@@ -82,8 +82,8 @@ void execute_gt(VM *vm){
 }
 
 void execute_ge(VM *vm){
-    int rhs = stack_pop(&vm->operandStack);
-    int lhs = stack_pop(&vm->operandStack);
+    int32_t rhs = stack_pop(&vm->operandStack);
+    int32_t lhs = stack_pop(&vm->operandStack);
     if(lhs >= rhs){
         stack_push(&vm->operandStack,1);
     }else{
@@ -92,8 +92,8 @@ void execute_ge(VM *vm){
 }
 
 void execute_eq(VM *vm){
-    int rhs = stack_pop(&vm->operandStack);
-    int lhs = stack_pop(&vm->operandStack);
+    int32_t rhs = stack_pop(&vm->operandStack);
+    int32_t lhs = stack_pop(&vm->operandStack);
     if(lhs == rhs){
         stack_push(&vm->operandStack,1);
     }else{
@@ -102,8 +102,8 @@ void execute_eq(VM *vm){
 }
 
 void execute_ne(VM *vm){
-    int rhs = stack_pop(&vm->operandStack);
-    int lhs = stack_pop(&vm->operandStack);
+    int32_t rhs = stack_pop(&vm->operandStack);
+    int32_t lhs = stack_pop(&vm->operandStack);
     if(lhs != rhs){
         stack_push(&vm->operandStack,1);
     }else{
@@ -112,8 +112,8 @@ void execute_ne(VM *vm){
 }
 
 void execute_lt(VM *vm){
-    int rhs = stack_pop(&vm->operandStack);
-    int lhs = stack_pop(&vm->operandStack);
+    int32_t rhs = stack_pop(&vm->operandStack);
+    int32_t lhs = stack_pop(&vm->operandStack);
     if(lhs < rhs){
         stack_push(&vm->operandStack,1);
     }else{
@@ -122,8 +122,8 @@ void execute_lt(VM *vm){
 }
 
 void execute_le(VM *vm){
-    int rhs = stack_pop(&vm->operandStack);
-    int lhs = stack_pop(&vm->operandStack);
+    int32_t rhs = stack_pop(&vm->operandStack);
+    int32_t lhs = stack_pop(&vm->operandStack);
     if(lhs <= rhs){
         stack_push(&vm->operandStack,1);
     }else{
@@ -176,16 +176,16 @@ void execute_jnz(VM *vm){
 }
 
 void execute_call(VM *vm){
-    stack_push(&vm->callStack, vm->pc + 2);
+    stack_push(&vm->callStack, (int32_t)vm->pc + 2);
     execute_jmp(vm);
 }
 
 void execute_ret(VM *vm){
-   vm->pc = stack_pop(&vm->callStack);
+   vm->pc = (size_t)stack_pop(&vm->callStack);
 }
 
 void execute_store(VM *vm){
-    int memory_index = vm->program[++vm->pc];
+    int32_t memory_index = vm->program[++vm->pc];
     if(memory_index < 0 || memory_index >= MEMORY_SIZE){
         fprintf(stderr,"Invalid memory access !! \n");
         vm->running = false;
@@ -195,7 +195,7 @@ void execute_store(VM *vm){
 }
 
 void execute_load(VM *vm){
-    int memory_index = vm->program[++vm->pc];
+    int32_t memory_index = vm->program[++vm->pc];
     if(memory_index < 0 || memory_index >= MEMORY_SIZE){
         fprintf(stderr,"Invalid memory access !! \n");
         vm->running = false;
@@ -205,14 +205,14 @@ void execute_load(VM *vm){
 }
 
 void execute_inpt(VM *vm){
-    int user_input;
+    int32_t user_input;
     printf("Enter the value : ");
-    scanf("%d", &user_input);
+    scanf("%" SCNd32, &user_input);
     stack_push(&vm->operandStack, user_input);
 }
 
 void execute_prnt(VM *vm){
-    printf("%d\n",stack_pop(&vm->operandStack));
+    printf("%" PRId32 "\n", stack_pop(&vm->operandStack));
 }
 
 void execute_pop(VM *vm){

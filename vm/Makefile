@@ -1,4 +1,4 @@
-CC = clang
+CC ?= cc
 
 CFLAGS = -Wall -Wextra -g -std=c11 \
 	-Iinclude \
