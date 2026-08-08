@@ -1,12 +1,12 @@
 #include "instruction_handlers.h"
 
 // Function to fetch the current instruction
-Instruction vm_fetch_instruction(VM *vm){
+VmInstruction vm_fetch_instruction(VM *vm){
     return vm->program[vm->pc];
 }
 
 // Function to execute the instructions
-void vm_execute_instruction(VM *vm, Instruction instr){
+void vm_execute_instruction(VM *vm, VmInstruction instr){
     switch(instr){
         case HLT: {
             execute_hlt(vm);
@@ -157,11 +157,11 @@ void vm_init(VM *vm, const int *program, size_t programLength){
 // Function to call each VM step individually 
 void vm_step(VM *vm){
     if(vm->pc >= vm->programLength){
-        fprintf(stderr,"Program Counter out of bounds !!");
+        fprintf(stderr,"Program terminated unexpectedly: missing HLT instruction?\n");
         vm->running = false;
         return;
     }
-    Instruction instr = vm_fetch_instruction(vm);
+    VmInstruction instr = vm_fetch_instruction(vm);
     vm_execute_instruction(vm,instr);
     if(!is_pc_modified(instr)){
         vm->pc++;

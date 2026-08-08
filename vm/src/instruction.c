@@ -1,5 +1,5 @@
 #include "instruction.h"
-size_t instruction_size(Instruction instr){
+size_t instruction_size(VmInstruction instr){
     switch(instr){
         case PSH:
         case JMP:
@@ -15,7 +15,7 @@ size_t instruction_size(Instruction instr){
     }
 }
 
-bool is_pc_modified(Instruction instr){
+bool is_pc_modified(VmInstruction instr){
     switch(instr){
         case JMP:
         case JZ:

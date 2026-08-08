@@ -18,10 +18,10 @@ typedef struct{
 }VM;
 
 // Function to fetch the current instruction
-Instruction vm_fetch_instruction(VM *vm);
+VmInstruction vm_fetch_instruction(VM *vm);
 
 // Function to execute the instructions
-void vm_execute_instruction(VM *vm, Instruction instr);
+void vm_execute_instruction(VM *vm, VmInstruction instr);
 
 // Function to initialize our VM
 void vm_init(VM *vm, const int *program, size_t programLength);

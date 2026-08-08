@@ -4,6 +4,7 @@
 #include "tokenizer.h"
 #include "parser.h"
 #include "instruction.h"
+#include "serializer.h"
 
 int main(void) {
     FILE *file_pointer;
@@ -24,6 +25,6 @@ int main(void) {
     tokenize(token_array, &token_array_count, buffer);
     Program program = {0};
     parse(token_array, token_array_count, &program);
-
+    serialize(&program);
 	return 0;
 }

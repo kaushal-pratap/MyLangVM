@@ -1,13 +1,15 @@
 CC = clang
 CFLAGS = -Wall -Wextra -g -std=c11 \
 		-Iinclude \
-		-I../common
+		-I../common \
+		-I../assembler/include
 
 SRC = src/main.c \
       src/vm.c \
       src/stack.c \
 	  src/instruction_handlers.c \
-	  src/instruction.c
+	  src/instruction.c \
+	  src/loader.c
 
 TARGET = mylangvm
 

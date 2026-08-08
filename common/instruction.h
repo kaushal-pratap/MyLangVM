@@ -2,37 +2,51 @@
 #define INSTRUCTION_H
 #include<stdbool.h>
 #include<stdlib.h>
+#include "opcode_table.h"
 // Creating enumration, same as [#define] but [enum] auto-indexes the elements and replaces the words same as like [#define] do
 typedef enum{
-    PSH, // Pushes a number to the stack
-    ADD, // Takes the last two numbers from stack, pops them one by one, add them and push the result back in stack
-    SUB, // Takes the last two numbers from stack, pop them one by one, subtracts them and push the result back in stack
-    MUL, // Takes the last two numbers from stack, pop them one by one, multiplies them and push the result back in stack
-    DIV, // Takes the last two numbers from stack, pop them one by one, divide them and push the result back in stack
-    DUP, // Duplicates the top element and pushes it on top
-    SWP, // Swap the top two values
-    MOD, // Finds the modulo of two numbers and pushes the result back to the stack
-    NEG, // Negate -> Makes the top element negative
-    POS, // Makes the top element positive
-    GT, // Greater than -> Pops two elements, compares them for greater than, pushes the result in 0 or 1
-    GE, // Greater than or equal to -> Pops two elements, compares them for greater than or equal to, pushes the result in 0 or 1
-    EQ, // Equal to -> Compares if both the elements are equal or not
-    NE, // Not equal to -> Compares for "Not equal to operator"
-    LT, // Less than -> Compares for less than operator
-    LE, // Less Than or equal to -> Compares for less than or equal to operator
-    JMP, // Jump -> Takes a value to jumps at an instruction, the number of instruction to jump on
-    JZ, // Jump if zero -> Jumps to the desired instruction when top element of the stack is zero
-    JNZ, // Jump if not zero -> Jumps to the desired instruction when top element of the stack is not zero
-    CALL, // Calls a function -> In other words, we jump to some other instruction and come back using [RET] to the next instruction where we have to continue from before we jumped
-    RET, // Return -> We return to the instruction where we have to continue after function call
-    STORE, // Takes the top element of stack, pops it, and stores it into the memory
-    LOAD, // Copies the element at desired index from memory to the top of stack
-    INPT, // Input -> Takes the input from user and pushes onto the top of stack
-    PRNT, // Print-> Pop the top value of stack and displays the value on screen
-    POP, // Pops the last element of the stack
-    HLT // Ends the program
-}Instruction;
+    PSH = 0, // Pushes a number to the stack
+    ADD = 1, // Takes the last two numbers from stack, pops them one by one, add them and push the result back in stack
+    SUB = 2, // Takes the last two numbers from stack, pop them one by one, subtracts them and push the result back in stack
+    MUL = 3, // Takes the last two numbers from stack, pop them one by one, multiplies them and push the result back in stack
+    DIV = 4, // Takes the last two numbers from stack, pop them one by one, divide them and push the result back in stack
+    DUP = 5, // Duplicates the top element and pushes it on top
+    SWP = 6, // Swap the top two values
+    MOD = 7, // Finds the modulo of two numbers and pushes the result back to the stack
+    NEG = 8, // Negate -> Makes the top element negative
+    POS = 9, // Makes the top element positive
+    GT = 10, // Greater than -> Pops two elements, compares them for greater than, pushes the result in 0 or 1
+    GE = 11, // Greater than or equal to -> Pops two elements, compares them for greater than or equal to, pushes the result in 0 or 1
+    EQ = 12, // Equal to -> Compares if both the elements are equal or not
+    NE = 13, // Not equal to -> Compares for "Not equal to operator"
+    LT = 14, // Less than -> Compares for less than operator
+    LE = 15, // Less Than or equal to -> Compares for less than or equal to operator
+    JMP = 16, // Jump -> Takes a value to jumps at an instruction, the number of instruction to jump on
+    JZ = 17, // Jump if zero -> Jumps to the desired instruction when top element of the stack is zero
+    JNZ = 18, // Jump if not zero -> Jumps to the desired instruction when top element of the stack is not zero
+    CALL = 19, // Calls a function -> In other words, we jump to some other instruction and come back using [RET] to the next instruction where we have to continue from before we jumped
+    RET = 20, // Return -> We return to the instruction where we have to continue after function call
+    STORE = 21, // Takes the top element of stack, pops it, and stores it into the memory
+    LOAD = 22, // Copies the element at desired index from memory to the top of stack
+    INPT = 23, // Input -> Takes the input from user and pushes onto the top of stack
+    PRNT = 24, // Print-> Pop the top value of stack and displays the value on screen
+    POP = 25, // Pops the last element of the stack
+    HLT = 26 // Ends the program
+}VmInstruction;
 
-size_t instruction_size(Instruction instr);
-bool is_pc_modified(Instruction instr);
+typedef struct IRInstruction{
+    Opcode opcode;
+    int operand;
+    bool has_operand;
+} IRInstruction;
+
+#define MAX_INSTRUCTION_SIZE 1024
+
+typedef struct Program{
+    IRInstruction instructions[MAX_INSTRUCTION_SIZE];
+    size_t instruction_count;
+} Program;
+
+size_t instruction_size(VmInstruction instr);
+bool is_pc_modified(VmInstruction instr);
 #endif

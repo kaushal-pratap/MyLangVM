@@ -6,7 +6,8 @@ CFLAGS = -Wall -Wextra -g -std=c11 \
 SRC = src/main.c \
       src/tokenizer.c \
 	  src/opcode_table.c \
-	  src/parser.c
+	  src/parser.c \
+	  src/serializer.c
 
 TARGET = mylangasm
 
