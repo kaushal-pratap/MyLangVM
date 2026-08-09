@@ -1,285 +1,285 @@
-# MyLangVM - Stack-Based Bytecode Virtual Machine in C
-
-A lightweight, high-performance **stack-based bytecode virtual machine** and accompanying toolchain built from scratch in C. **MyLangVM** features a dual-stack runtime architecture (Evaluation Stack + Call Stack), a 1024-word memory system, interactive I/O opcodes, variable-length opcode decoding, and an instruction-mapping layer for non-linear control jumps and subroutine calls (`CALL` / `RET`).
-
----
-
-## 📋 Table of Contents
-1. [Core Concepts](#-core-concepts)
-   - [What is a Language Virtual Machine?](#what-is-a-language-virtual-machine)
-   - [What is Bytecode?](#what-is-bytecode)
-   - [Stack-Based vs. Register-Based VMs](#stack-based-vs-register-based-vms)
-2. [Architecture & System Design](#-architecture--system-design)
-   - [Dual-Stack & Memory Model](#1-dual-stack--memory-model)
-   - [Logical Instruction Mapping](#2-logical-instruction-mapping)
-   - [Fetch-Decode-Execute Pipeline](#3-fetch-decode-execute-pipeline)
-3. [Project Directory Structure](#-project-directory-structure)
-4. [Instruction Set Architecture (ISA)](#-instruction-set-architecture-isa)
-5. [Assembler Toolchain (Coming Soon)](#-assembler-toolchain-coming-soon)
-6. [Program Walkthrough](#-program-walkthrough)
-7. [Build & Execution Guide](#-build--execution-guide)
-8. [Extending MyLangVM](#-extending-mylangvm)
-9. [License](#-license)
+<p align="center">
+  <h1 align="center">MyLangVM</h1>
+  <p align="center">
+    <strong>A stack-based bytecode virtual machine and assembler toolchain, built from scratch in C.</strong>
+  </p>
+  <p align="center">
+    <a href="#-quick-start">Quick Start</a> · <a href="docs/03-assembly-language-guide.md">Write Programs</a> · <a href="docs/04-instruction-set-reference.md">ISA Reference</a> · <a href="#-documentation">Full Docs</a>
+  </p>
+</p>
 
 ---
 
-## 💡 Core Concepts
+## What is MyLangVM?
 
-### What is a Language Virtual Machine?
-A **Language Virtual Machine** (also known as a *Process VM*) is a software execution engine that emulates a computer system. Unlike **System Virtual Machines** (like QEMU or VirtualBox) which emulate physical hardware to run guest operating systems, a Language VM is dedicated to executing compiled program bytecode for a specific language runtime.
+**MyLangVM** is a complete, from-scratch implementation of a language virtual machine system in portable C11. It consists of two independent programs that work together:
 
-Key examples of Language VMs include the **JVM** (Java Virtual Machine), **BEAM** (Erlang/Elixir), **V8** (JavaScript engine), and CPython.
+1. **`mylangasm`** — An assembler that reads human-readable `.asm` source files and compiles them into a compact binary bytecode format (`.mylangvm`).
+2. **`mylangvm`** — A virtual machine that loads and executes those bytecode files using a stack-based runtime engine.
 
----
-
-### What is Bytecode?
-**Bytecode** is a compact, low-level intermediate representation (IR) of program code designed for efficient execution by a virtual machine. 
+You write programs in a clean, readable assembly language. The assembler translates your mnemonics into bytecode. The VM runs the bytecode. The two programs communicate exclusively through the bytecode file — a well-defined binary interface.
 
 ```
-[ High-Level Code / Assembly ]  --->  ( Assembler )  --->  [ Bytecode Stream ]  --->  ( MyLangVM Engine )
-```
-
-Rather than compiling directly to hardware-specific machine code (like x86_64 or ARM64), source code is translated into bytecode opcodes. The VM reads these opcodes sequentially and executes their corresponding native C handlers.
-
----
-
-### Stack-Based vs. Register-Based VMs
-
-Language Virtual Machines generally fall into two architectural patterns:
-
-| Feature | **Stack-Based VM (MyLangVM)** | **Register-Based VM (e.g., Lua VM)** |
-| :--- | :--- | :--- |
-| **Operand Location** | Values pushed/popped on an **Evaluation Stack** | Stored in explicit virtual registers (`R0`, `R1`...) |
-| **Instruction Size** | Small (opcodes don't need register indices) | Larger (instructions encode source/destination registers) |
-| **Compiler Complexity** | Simple & clean to generate bytecode for | Requires complex register allocation algorithms |
-| **Example Addition** | `PSH 5`, `PSH 10`, `ADD` | `ADD R1, R2, R3` |
-
-MyLangVM uses a **Stack-Based Architecture**, making it clean, modular, and ideal for understanding virtual machine runtimes and compiler backends.
-
----
-
-## 🏗️ Architecture & System Design
-
-MyLangVM consists of three core runtime pillars:
-
-```
-+-----------------------------------------------------------------------+
-|                            MyLangVM Engine                            |
-+-----------------------------------------------------------------------+
-|  Program Counter (PC)  |  Logical Instruction Map Array (MapTable)   |
-+------------------------+----------------------------------------------+
-|   Evaluation Stack     |                Call Stack                    |
-|   (operandStack)       |                (callStack)                   |
-|   [ val0, val1, ... ]  |       [ return_address_0, ... ]              |
-+------------------------+----------------------------------------------+
-|                    RAM Memory Array: memory[1024]                      |
-|                  [ STORE index / LOAD index access ]                  |
-+-----------------------------------------------------------------------+
-```
-
-### 1. Dual-Stack & Memory Model
-To prevent data contamination between evaluation data and function execution flow, MyLangVM maintains two isolated stacks plus a RAM array:
-* **`operandStack`**: Holds intermediate calculation values, arithmetic operands, comparison results, and I/O inputs.
-* **`callStack`**: Dedicated return-address stack for function subroutines. When `CALL` executes, the return address (`pc + 2`) is pushed to `callStack`. When `RET` executes, it pops the return address and restores `pc`.
-* **`memory[1024]`**: A 1024-word RAM space accessible via `STORE <index>` and `LOAD <index>` opcodes.
-
----
-
-### 2. Logical Instruction Mapping
-In MyLangVM, opcodes can be:
-* **1-Word Instructions** (1 element in bytecode stream, e.g., `ADD`, `SUB`, `INPT`, `PRNT`, `RET`, `HLT`).
-* **2-Word Instructions** (2 elements in bytecode stream, e.g., `PSH 1000`, `JMP 4`, `CALL 6`, `STORE 0`, `LOAD 1`).
-
-Because instructions vary in word length, raw array indices do not match logical instruction numbers. During `vm_init()`, `build_instruction_map()` scans the bytecode stream and constructs `instructionMapArray`, which maps **0-based logical instruction indices** to raw array positions.
-
-This allows jump instructions (`JMP`, `JZ`, `JNZ`, `CALL`) to target **logical instruction numbers** directly without needing hardcoded memory byte offsets.
-
----
-
-### 3. Fetch-Decode-Execute Pipeline
-The VM executes programs using a classic 4-step loop inside `vm_run()` / `vm_step()`:
-
-```mermaid
-graph LR
-    FETCH["1. Fetch<br/>program[pc]"] --> DECODE["2. Decode<br/>instruction_size & is_pc_modified"]
-    DECODE --> EXECUTE["3. Execute<br/>Instruction Handler"]
-    EXECUTE --> ADVANCE["4. Advance PC<br/>Increment pc if not modified by Jump/Ret"]
-    ADVANCE --> FETCH
+                          MyLangVM Toolchain
+  ┌─────────────┐       ┌─────────────┐       ┌─────────────┐
+  │  .asm file   │──────▶│  mylangasm   │──────▶│  .mylangvm   │
+  │  (source)    │       │  (assembler) │       │  (bytecode)  │
+  └─────────────┘       └─────────────┘       └──────┬──────┘
+                                                      │
+                                                      ▼
+                                               ┌─────────────┐
+                                               │  mylangvm    │
+                                               │  (vm engine) │
+                                               └──────┬──────┘
+                                                      │
+                                                      ▼
+                                                   Output
 ```
 
 ---
 
-## 📁 Project Directory Structure
+## ✨ Features
 
-The repository is organized into modular sub-projects:
+- **27 instructions** covering arithmetic, comparison, control flow, memory, I/O, and stack manipulation
+- **Dual-stack architecture** — separate operand stack and call stack for clean subroutine support
+- **1024-word addressable memory** — `STORE` / `LOAD` instructions for persistent data
+- **Subroutine calls** — `CALL` / `RETURN` with automatic return-address management
+- **Conditional and unconditional jumps** — `JUMP`, `JUMP_IF_ZERO`, `JUMP_IF_NOT_ZERO`
+- **User I/O** — `INPUT` reads integers from stdin, `PRINT` writes to stdout
+- **Logical instruction addressing** — jump targets are logical instruction numbers, not raw byte offsets
+- **Human-readable assembly** — full-word mnemonics like `PUSH`, `MULTIPLY`, `GREATER_THAN`
+- **Case-insensitive assembler** — write `PUSH`, `push`, or `Push` — all are valid
+- **Endian-portable bytecode** — the serializer writes operands in little-endian format regardless of host byte order
+- **Clean C11 codebase** — no platform-specific APIs, standard C only
+
+---
+
+## 📁 Project Structure
 
 ```
 MyLangVM/
-├── Makefile                      # Root build system script
-├── README.md                     # Project documentation
-├── LICENSE                       # GPL-3.0 License
-├── common/                       # Shared Headers across modules
-│   └── instruction.h             # Master Enum Opcodes (27 opcodes) & helper signatures
-├── vm/                           # Virtual Machine Module
-│   ├── Makefile                  # Build script for VM binary (mylangvm)
-│   ├── include/                  # VM-specific Header Layer
-│   │   ├── instruction_handlers.h # Prototypes for opcode handler functions
-│   │   ├── stack.h               # Stack data structure & API declarations
-│   │   └── vm.h                  # VM state structure (operandStack, callStack, memory)
-│   └── src/                      # VM Implementation Layer
-│       ├── main.c                # Main entry point & sample bytecode program
-│       ├── instruction.c         # Opcode sizes & PC modification predicates
-│       ├── instruction_handlers.c# Handler logic (execute_add, execute_store, etc.)
-│       ├── stack.c               # Stack initialization, push, pop, & peek routines
-│       └── vm.c                  # VM lifecycle, instruction mapping, & execution loop
-└── assembler/                    # Assembler Toolchain Module [COMING SOON]
-    ├── Makefile                  # Build script for Assembler binary
-    ├── include/                  # Header directory (In Progress)
-    └── src/                      # Source implementation directory (In Progress)
+├── Makefile                          Root build orchestrator
+├── mylang                            Shell script — assemble + run in one step
+├── LICENSE                           GPL-3.0
+│
+├── common/                           Shared definitions
+│   └── instruction.h                 VM instruction enum, IR structures, limits
+│
+├── assembler/                        Assembler toolchain (mylangasm)
+│   ├── Makefile                      Assembler build script
+│   ├── include/
+│   │   ├── token.h                   Token types and structures
+│   │   ├── tokenizer.h               Tokenizer API
+│   │   ├── opcode_table.h            Opcode enum and lookup table
+│   │   ├── parser.h                  Parser API
+│   │   └── serializer.h              Serializer API
+│   └── src/
+│       ├── main.c                    Assembler entry point and pipeline
+│       ├── tokenizer.c               Whitespace-splitting tokenizer
+│       ├── opcode_table.c            Mnemonic → opcode lookup
+│       ├── parser.c                  Token stream → IR instruction array
+│       └── serializer.c              IR → binary bytecode emitter
+│
+├── vm/                               Virtual machine (mylangvm)
+│   ├── Makefile                      VM build script
+│   ├── include/
+│   │   ├── vm.h                      VM state structure and lifecycle API
+│   │   ├── stack.h                   Stack data structure and operations
+│   │   ├── instruction_handlers.h    Handler function prototypes
+│   │   └── loader.h                  Bytecode file loader
+│   └── src/
+│       ├── main.c                    VM entry point
+│       ├── vm.c                      Core VM — init, fetch, decode, execute loop
+│       ├── stack.c                   Stack push, pop, peek, overflow checks
+│       ├── instruction_handlers.c    All 27 instruction implementations
+│       ├── instruction.c             Instruction size and PC-modification queries
+│       └── loader.c                  Binary bytecode file reader
+│
+├── examples/                         Example programs organized by category
+│   ├── arithmetic/                   add, subtract, multiply, divide, modulo
+│   ├── comparison/                   equal, not_equal, greater_than, less_than, ...
+│   ├── control_flow/                 jump, jump_if_zero, jump_if_not_zero, call_return, ...
+│   ├── demos/                        Multi-instruction demos (calculator, expression, ...)
+│   ├── io/                           input, echo
+│   ├── memory/                       store_load, overwrite
+│   ├── stack/                        duplicate, pop, swap
+│   └── unary/                        negative, positive
+│
+├── tests/                            Test programs
+│   └── push_test.asm                 Edge-case test (INT32_MIN, negative multiply)
+│
+├── build/                            Build output (generated)
+│   ├── assembler/                    mylangasm binary
+│   ├── bytecode/                     Compiled .mylangvm files
+│   └── vm/                           mylangvm binary
+│
+└── docs/                             In-depth documentation
+    ├── 01-getting-started.md         Installation, build, first program
+    ├── 02-architecture.md            System design deep-dive
+    ├── 03-assembly-language-guide.md Learn to write programs
+    ├── 04-instruction-set-reference.md  Complete ISA reference
+    ├── 05-assembler-internals.md     How the assembler works
+    ├── 06-virtual-machine-internals.md  How the VM works
+    ├── 07-bytecode-format.md         Binary format specification
+    └── 08-examples-cookbook.md        Annotated example walkthroughs
 ```
 
 ---
 
-## 📜 Instruction Set Architecture (ISA)
-
-MyLangVM supports **27 discrete opcodes**:
-
-### 1. Stack Operations
-| Opcode | Size | Stack Effect | Description |
-| :--- | :---: | :--- | :--- |
-| **`PSH <val>`** | 2 | `[] -> [val]` | Pushes immediate integer `<val>` onto `operandStack`. |
-| **`POP`** | 1 | `[val] -> []` | Pops top element from `operandStack`. |
-| **`DUP`** | 1 | `[val] -> [val, val]` | Duplicates top element of `operandStack`. |
-| **`SWP`** | 1 | `[a, b] -> [b, a]` | Swaps top two elements of `operandStack`. |
-
-### 2. Arithmetic & Unary Operations
-| Opcode | Size | Stack Effect | Description |
-| :--- | :---: | :--- | :--- |
-| **`ADD`** | 1 | `[a, b] -> [a + b]` | Pops `b` and `a`, pushes `a + b`. |
-| **`SUB`** | 1 | `[a, b] -> [a - b]` | Pops `b` and `a`, pushes `a - b`. |
-| **`MUL`** | 1 | `[a, b] -> [a * b]` | Pops `b` and `a`, pushes `a * b`. |
-| **`DIV`** | 1 | `[a, b] -> [a / b]` | Pops `b` and `a`, pushes `a / b` (exit on div by 0). |
-| **`MOD`** | 1 | `[a, b] -> [a % b]` | Pops `b` and `a`, pushes `a % b`. |
-| **`NEG`** | 1 | `[val] -> [-val]` | Negates top element if positive. |
-| **`POS`** | 1 | `[-val] -> [val]` | Converts negative top element to positive. |
-
-### 3. Comparison & Logical Operations
-| Opcode | Size | Stack Effect | Description |
-| :--- | :---: | :--- | :--- |
-| **`GT`** | 1 | `[a, b] -> [a > b ? 1 : 0]` | Greater than comparison. |
-| **`GE`** | 1 | `[a, b] -> [a >= b ? 1 : 0]` | Greater than or equal comparison. |
-| **`EQ`** | 1 | `[a, b] -> [a == b ? 1 : 0]` | Equal to comparison. |
-| **`NE`** | 1 | `[a, b] -> [a != b ? 1 : 0]` | Not equal to comparison. |
-| **`LT`** | 1 | `[a, b] -> [a < b ? 1 : 0]` | Less than comparison. |
-| **`LE`** | 1 | `[a, b] -> [a <= b ? 1 : 0]` | Less than or equal comparison. |
-
-### 4. Control Flow & Subroutines
-| Opcode | Size | Stack Effect | Description |
-| :--- | :---: | :--- | :--- |
-| **`JMP <target>`**| 2 | `[] -> []` | Unconditional jump to logical instruction `<target>`. |
-| **`JZ <target>`** | 2 | `[cond] -> []` | Pops `cond`; jumps to `<target>` if `cond == 0`. |
-| **`JNZ <target>`**| 2 | `[cond] -> []` | Pops `cond`; jumps to `<target>` if `cond != 0`. |
-| **`CALL <target>`**| 2 | `[] -> []` | Pushes return address to `callStack`; jumps to `<target>`. |
-| **`RET`** | 1 | `[] -> []` | Pops return address from `callStack` and restores `pc`. |
-
-### 5. Memory & I/O Operations
-| Opcode | Size | Stack Effect | Description |
-| :--- | :---: | :--- | :--- |
-| **`STORE <idx>`** | 2 | `[val] -> []` | Pops `val` and stores it at `memory[idx]`. |
-| **`LOAD <idx>`**  | 2 | `[] -> [val]` | Copies `memory[idx]` and pushes it to `operandStack`. |
-| **`INPT`**        | 1 | `[] -> [input]` | Prompts user for integer input via stdin and pushes it. |
-| **`PRNT`**        | 1 | `[val] -> []` | Pops `val` from `operandStack` and prints it to stdout. |
-| **`HLT`**         | 1 | `[] -> []` | Terminates VM execution cleanly. |
-
----
-
-## 🛠️ Assembler Toolchain (Coming Soon)
-
-Work has begun on an **Assembler Toolchain** (`assembler/` directory). The assembler will parse human-readable `.mylang` assembly files (containing mnemonics, labels, and arguments) and compile them into binary bytecode files executable by **MyLangVM**.
-
-Stay tuned for updates! 🚀
-
----
-
-## 🏃 Program Walkthrough
-
-Consider an interactive program in `vm/src/main.c`:
-
-```c
-const int program[] = {
-    INPT,   // Prompts user for 1st number, pushes to operandStack
-    INPT,   // Prompts user for 2nd number, pushes to operandStack
-    ADD,    // Pops both numbers, adds them, pushes sum
-    PRNT,   // Pops sum and prints to console
-    HLT     // Halts execution
-};
-```
-
-### Console Run:
-```text
-Enter the value : 15
-The element is pushed : 15
-Enter the value : 25
-The element is pushed : 25
-The element is popped : 25
-The element is popped : 15
-The element is pushed : 40
-The element is popped : 40
-40
-```
-
----
-
-## 🛠️ Build & Execution Guide
+## 🚀 Quick Start
 
 ### Prerequisites
-* **C Compiler**: `clang` or `gcc` supporting C11 (`-std=c11`).
-* **Build Tool**: `make` (Unix/macOS) or `mingw32-make` (Windows).
+
+| Requirement | Notes |
+|:---|:---|
+| **C compiler** | Any C11-capable compiler — `gcc`, `clang`, or `cc` |
+| **GNU Make** | `make` on Linux/macOS, `mingw32-make` on Windows with MinGW |
+| **Shell** (optional) | `sh` for the `mylang` convenience script |
+
+### Build Everything
+
+From the project root:
+
+```bash
+make
+```
+
+This builds both `mylangasm` (the assembler) and `mylangvm` (the virtual machine). The binaries are placed in `build/assembler/` and `build/vm/`.
+
+### Assemble and Run a Program
+
+**Step 1 — Assemble** your `.asm` source file into bytecode:
+
+```bash
+./build/assembler/mylangasm examples/arithmetic/add.asm build/bytecode/bytecode.mylangvm
+```
+
+**Step 2 — Execute** the bytecode:
+
+```bash
+./build/vm/mylangvm build/bytecode/bytecode.mylangvm
+```
+
+**Output:**
+
+```
+8
+```
+
+### One-Step Shortcut
+
+Use the `mylang` shell script to assemble and run in a single command:
+
+```bash
+./mylang examples/arithmetic/add.asm
+```
+
+### Clean Build Artifacts
+
+```bash
+make clean
+```
 
 ---
 
-### Building and Running the VM
+## 🔤 Your First Program
 
-1. Navigate to the `vm/` sub-directory:
-   ```bash
-   cd vm
-   ```
+Create a file called `hello.asm`:
 
-2. Compile using `make`:
-   ```bash
-   make
-   ```
-   *This compiles `vm/src/*.c` using `-Iinclude -I../common` and outputs the executable `mylangvm`.*
+```asm
+PUSH 10
+PUSH 20
+ADD
+PRINT
+HALT
+```
 
-3. Run the virtual machine:
-   * **macOS / Linux**:
-     ```bash
-     ./mylangvm
-     ```
-   * **Windows (MinGW)**:
-     ```powershell
-     .\mylangvm.exe
-     ```
+Assemble and run it:
 
-4. Clean build artifacts:
-   ```bash
-   make clean
-   ```
+```bash
+./build/assembler/mylangasm hello.asm build/bytecode/bytecode.mylangvm
+./build/vm/mylangvm build/bytecode/bytecode.mylangvm
+```
+
+**Output:**
+
+```
+30
+```
+
+That's it. Five instructions, one result. To learn how to write more complex programs — with loops, conditionals, functions, memory, and user input — head over to the [Assembly Language Guide](docs/03-assembly-language-guide.md).
 
 ---
 
-## 🔧 Extending MyLangVM
+## 🏗️ Architecture at a Glance
 
-To add a new instruction (e.g., `BIT_AND` or `BIT_OR`):
+MyLangVM is a **stack-based** virtual machine. All operations work by pushing values onto and popping values off of a stack — there are no named registers.
 
-1. **Update Common Header**: Add the opcode to `Instruction` enum in `common/instruction.h`.
-2. **Update Opcode Size & Modifiers**: Declare size in `instruction_size()` and PC modification flag in `is_pc_modified()` in `vm/src/instruction.c`.
-3. **Declare Handler Prototype**: Add `void execute_your_opcode(VM *vm);` in `vm/include/instruction_handlers.h`.
-4. **Implement Handler**: Define execution logic in `vm/src/instruction_handlers.c`.
-5. **Add Switch Case**: Add `case YOUR_OPCODE:` inside `vm_execute_instruction()` in `vm/src/vm.c`.
+**Key design decisions:**
+
+| Concept | Implementation |
+|:---|:---|
+| **Execution model** | Stack-based (not register-based) |
+| **Dual stacks** | Separate operand stack and call stack |
+| **Memory** | 1024-word flat address space |
+| **Instruction sizes** | Variable — 1 byte (opcode only) or 5 bytes (opcode + 4-byte operand) |
+| **Jump addressing** | Logical instruction indices, not raw byte offsets |
+| **Bytecode endianness** | Serialized as little-endian, decoded on any host |
+| **Data type** | 32-bit signed integers (`int32_t`) |
+
+For the full architecture deep-dive, see [Architecture](docs/02-architecture.md).
+
+---
+
+## 🖥️ Platform Support
+
+MyLangVM is written in standard C11 with no platform-specific system calls. It builds and runs on any system with a conforming C11 compiler and `make`.
+
+| Platform | Compiler | Status |
+|:---|:---|:---|
+| **macOS** (Apple Silicon / Intel) | `clang` (Xcode CLI tools) | ✅ Fully tested |
+| **Linux** (x86_64, ARM64) | `gcc`, `clang` | ✅ Builds and runs |
+| **Windows** (MinGW / MSYS2) | `gcc` (MinGW-w64) | ✅ Builds and runs |
+| **Windows** (MSVC) | `cl.exe` | Requires manual compilation (no Makefile support) |
+
+### Portability Status
+
+| Area | Status |
+|:---|:---|
+| **Source code** | Standard C11, no platform-specific APIs |
+| **Bytecode endianness** | ✅ Portable — little-endian serialization/deserialization regardless of host byte order |
+| **Build system** | GNU Make — works on Linux, macOS, and MinGW on Windows |
+| **File I/O** | Standard `fopen` / `fread` / `fwrite` with binary mode (`"rb"`, `"wb"`) |
+| **Integer types** | Fixed-width `int32_t` / `uint8_t` / `uint32_t` via `<stdint.h>` |
+| **Full cross-platform CI** | Not yet configured — planned for future releases |
+
+---
+
+## 📚 Documentation
+
+The `docs/` directory contains comprehensive, in-depth documentation covering every aspect of MyLangVM. Here is the recommended reading order:
+
+| # | Document | Description |
+|:---:|:---|:---|
+| 1 | **[Getting Started](docs/01-getting-started.md)** | Installation, building, running your first program |
+| 2 | **[Architecture](docs/02-architecture.md)** | System design, dual-stack model, execution pipeline |
+| 3 | **[Assembly Language Guide](docs/03-assembly-language-guide.md)** | Complete tutorial — learn to write programs from scratch |
+| 4 | **[Instruction Set Reference](docs/04-instruction-set-reference.md)** | Detailed reference for all 27 instructions |
+| 5 | **[Assembler Internals](docs/05-assembler-internals.md)** | How the assembler pipeline works (tokenizer → parser → serializer) |
+| 6 | **[Virtual Machine Internals](docs/06-virtual-machine-internals.md)** | How the VM loads, maps, and executes bytecode |
+| 7 | **[Bytecode Format](docs/07-bytecode-format.md)** | Binary format specification for `.mylangvm` files |
+| 8 | **[Examples Cookbook](docs/08-examples-cookbook.md)** | Annotated walkthroughs of every example program |
+
+> **Reading tip:** If you just want to start writing programs, jump straight to the [Assembly Language Guide](docs/03-assembly-language-guide.md). If you want to understand how the system works under the hood, start with [Architecture](docs/02-architecture.md) and then read the internals documents.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the [GPL-3.0 License](LICENSE).
+This project is licensed under the [GNU General Public License v3.0](LICENSE).
+
+---
+
+<p align="center">
+  <strong>Built from scratch in C · No dependencies · No magic</strong>
+</p>
